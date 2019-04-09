@@ -1,0 +1,12 @@
+# Keep sensitive data in terraform.tfvars, don't commit to repository.
+terraform.tfvars
+
+# Terraform
+.terraform/
+./*.tfstate
+.terraform.tfstate.lock.info
+terraform.tfstate
+terraform.tfplan
+*.backup
+
+autoshutoff.zip
