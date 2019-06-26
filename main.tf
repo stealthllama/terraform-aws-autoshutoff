@@ -16,23 +16,24 @@
 
 // Initialize the AWS provider
 provider "aws" {
-  region              = "${var.aws_region}"
-  version             = "2.12"
+  region  = "${var.aws_region}"
+  version = "2.12"
 }
 
 // Source Python script for the Lambda function
 data "archive_file" "lambda_zip" {
-  type                = "zip"
-  source_file         = "${path.module}/lambda_function.py"
-  output_path         = "${path.module}/autoshutoff.zip"
+  type        = "zip"
+  source_file = "${path.module}/lambda_function.py"
+  output_path = "${path.module}/autoshutoff.zip"
 }
 
 //  Create the IAM role and attached policies
 resource "aws_iam_role" "autoshutoff_role" {
-  name                = "${var.lambda_function_name}Role"
-  description         = "Allow Lambda functions to describe and stop EC2 instances in all regions."
-  tags                = "${merge(map("Name", format("%s-Role", var.lambda_function_name)), var.tags)}"
-  assume_role_policy  = <<EOF
+  name        = "${var.lambda_function_name}Role"
+  description = "Allow Lambda functions to describe and stop EC2 instances in all regions."
+  tags        = "${merge(map("Name", format("%s-Role", var.lambda_function_name)), var.tags)}"
+
+  assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -50,10 +51,10 @@ EOF
 }
 
 resource "aws_iam_role_policy" "autoshutoff_policy" {
-  name                = "${var.lambda_function_name}Execute"
-  role                = "${aws_iam_role.autoshutoff_role.id}"
+  name = "${var.lambda_function_name}Execute"
+  role = "${aws_iam_role.autoshutoff_role.id}"
 
-  policy              = <<EOF
+  policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -73,8 +74,8 @@ EOF
 }
 
 resource "aws_iam_role_policy" "logging_policy" {
-  name                = "${var.lambda_function_name}Logging"
-  role                = "${aws_iam_role.autoshutoff_role.id}"
+  name = "${var.lambda_function_name}Logging"
+  role = "${aws_iam_role.autoshutoff_role.id}"
 
   policy = <<EOF
 {
@@ -95,14 +96,14 @@ EOF
 
 // Define the Lambda function
 resource "aws_lambda_function" "autoshutoff" {
-  function_name       = "${var.lambda_function_name}"
-  description         = "A Lambda function to stop running EC2 instances nightly."
-  filename            = "${data.archive_file.lambda_zip.output_path}"
-  source_code_hash    = "${data.archive_file.lambda_zip.output_base64sha256}"
-  role                = "${aws_iam_role.autoshutoff_role.arn}"
-  handler             = "lambda_function.lambda_handler"
-  runtime             = "python3.7"
-  timeout             = 30
+  function_name    = "${var.lambda_function_name}"
+  description      = "A Lambda function to stop running EC2 instances nightly."
+  filename         = "${data.archive_file.lambda_zip.output_path}"
+  source_code_hash = "${data.archive_file.lambda_zip.output_base64sha256}"
+  role             = "${aws_iam_role.autoshutoff_role.arn}"
+  handler          = "lambda_function.lambda_handler"
+  runtime          = "python3.7"
+  timeout          = 30
 
   environment {
     variables {
@@ -121,18 +122,18 @@ resource "aws_cloudwatch_event_rule" "autoshutoff_rule" {
 }
 
 resource "aws_cloudwatch_event_target" "autoshutoff_target" {
-  rule                = "${aws_cloudwatch_event_rule.autoshutoff_rule.name}"
-  target_id           = "${aws_lambda_function.autoshutoff.function_name}"
-  arn                 = "${aws_lambda_function.autoshutoff.arn}"
+  rule      = "${aws_cloudwatch_event_rule.autoshutoff_rule.name}"
+  target_id = "${aws_lambda_function.autoshutoff.function_name}"
+  arn       = "${aws_lambda_function.autoshutoff.arn}"
 }
 
 // Allow CloudWatch to execute the Lambda function
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_autoshutoff" {
-  statement_id        = "AllowExecutionFromCloudWatch"
-  action              = "lambda:InvokeFunction"
-  function_name       = "${aws_lambda_function.autoshutoff.function_name}"
-  principal           = "events.amazonaws.com"
-  source_arn          = "${aws_cloudwatch_event_rule.autoshutoff_rule.arn}"
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.autoshutoff.function_name}"
+  principal     = "events.amazonaws.com"
+  source_arn    = "${aws_cloudwatch_event_rule.autoshutoff_rule.arn}"
 }
 
 // Create the CloudWatch log group

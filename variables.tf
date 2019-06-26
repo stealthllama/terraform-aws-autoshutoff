@@ -14,33 +14,32 @@
 # limitations under the License.
 ############################################################################################
 
-
 variable "lambda_function_name" {
-  description     = "The name of the Lambda function."
-  default         = "AutoShutOff"
+  description = "The name of the Lambda function."
+  default     = "AutoShutOff"
 }
 
 variable "shutoff_tag_name" {
-  description     = "The tag name (used in Lambda environment variable)."
-  default         = "AutoShutOff"
+  description = "The tag name (used in Lambda environment variable)."
+  default     = "AutoShutOff"
 }
 
 variable "shutoff_tag_value" {
-  description     = "The tag value (used in Lambda environment variable)."
-  default         = "false"
+  description = "The tag value (used in Lambda environment variable)."
+  default     = "false"
 }
 
 variable "aws_region" {
-  description     = "The AWS region in which to deploy."
-  default         = "us-west-2"
+  description = "The AWS region in which to deploy."
+  default     = "us-west-2"
 }
 
 variable "shutoff_time" {
-  description     = "Crontab expression for when (in UTC) to run the Lambda function."
-  default         = "cron(0 4 * * ? *)"
+  description = "Crontab expression for when (in UTC) to run the Lambda function."
+  default     = "cron(0 4 * * ? *)"
 }
 
 variable "tags" {
-  description     = "A map of tags to add to all resources."
-  default         = {}
+  description = "A map of tags to add to all resources."
+  default     = {}
 }
